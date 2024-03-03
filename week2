@@ -1,0 +1,103 @@
+using System;
+using System.Collections.Generic;
+
+using Grasshopper.Kernel;
+using Rhino.Geometry;
+using Rhino.Geometry.Intersect;
+
+namespace Grasshopper2
+{
+    public class Week2 : GH_Component
+    {
+        /// <summary>
+        /// Initializes a new instance of the Week2 class.
+        /// </summary>
+        public Week2()
+          : base("Week2", "Week2",
+              "Week2",
+              "MKS528E", "Week2")
+        {
+        }
+
+        /// <summary>
+        /// Registers all the input parameters for this component.
+        /// </summary>
+        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+        {
+        }
+
+        /// <summary>
+        /// Registers all the output parameters for this component.
+        /// </summary>
+        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+        {
+            pManager.AddPointParameter("Pt", "Pt", "Pt", GH_ParamAccess.list);
+            pManager.AddLineParameter("Ln", "Ln", "Ln", GH_ParamAccess.item);
+            pManager.AddCurveParameter("Crv", "Crv", "Crv", GH_ParamAccess.item);
+        }
+
+        /// <summary>
+        /// This is the method that actually does the work.
+        /// </summary>
+        /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
+        protected override async void SolveInstance(IGH_DataAccess DA)
+        {
+            Random rnd = new Random();
+            List<Point3d> Pts = new List<Point3d>();
+            Point3d Pt;
+            for (int i = 0; i < 10; i++)
+            {
+                Pt = new Point3d(rnd.Next(5), rnd.Next(5), rnd.Next(5));
+                Pts.Add(Pt);
+            }
+
+            Point3d Pt1 = new Point3d(0, 0, 0);
+            Point3d Pt2 = new Point3d(3, 5, 0);
+            Line Ln = new Line(Pt1, Pt2);
+
+
+            Curve crv;
+            List<Point3d> Pts2 = new List<Point3d>();
+            Point3d Pt4 = new Point3d(0, rnd.Next(2), 0);
+            Point3d Pt5 = new Point3d(1, rnd.Next(2), 0);
+            Point3d Pt6 = new Point3d(2, rnd.Next(2), 0);
+            Point3d Pt7 = new Point3d(3, rnd.Next(2), 0);
+            Pts2.Add(Pt4);
+            Pts2.Add(Pt5);
+            Pts2.Add(Pt6);
+            Pts2.Add(Pt7);
+            crv = Curve.CreateInterpolatedCurve(Pts2, 3);
+
+            Line Ln1 = new Line(new Point3d(0, 0, 0), new Point3d(1, 0, 0));
+            Line Ln2 = new Line(new Point3d(0.5, -1, 0), new Point3d(0.5, 1, 0));
+            double a, b;
+            bool bl =Intersection.LineLine(Ln1, Ln2, out a, out b);
+            Point3d Pt8 = Ln1.PointAt(a);
+
+            DA.SetDataList(0, Pts);
+            DA.SetData(1, Ln);
+            DA.SetData(2, crv);
+        }
+
+        /// <summary>
+        /// Provides an Icon for the component.
+        /// </summary>
+        protected override System.Drawing.Bitmap Icon
+        {
+            get
+            {
+                //You can add image files to your project resources and access them like this:
+                // return Resources.IconForThisComponent;
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the unique ID for this component. Do not change this ID after release.
+        /// </summary>
+        public override Guid ComponentGuid
+        {
+            get { return new Guid("E3ACBE26-7773-48DA-83E6-4F05B2353FE2"); }
+        }
+    }
+}
