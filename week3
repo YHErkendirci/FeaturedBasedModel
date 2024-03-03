@@ -1,0 +1,123 @@
+using System;
+using System.Collections.Generic;
+
+using Grasshopper.Kernel;
+using Rhino.Geometry;
+
+namespace Grasshopper2
+{
+    public class Week3 : GH_Component
+    {
+        /// <summary>
+        /// Initializes a new instance of the Week3 class.
+        /// </summary>
+        public Week3()
+          : base("Week3", "Week3",
+              "Week3",
+              "MKS528E", "Week3")
+        {
+        }
+
+        /// <summary>
+        /// Registers all the input parameters for this component.
+        /// </summary>
+        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+        {
+            pManager.AddNumberParameter("u", "u", "u", GH_ParamAccess.item);
+            pManager.AddNumberParameter("v", "v", "v", GH_ParamAccess.item);
+        }
+
+        /// <summary>
+        /// Registers all the output parameters for this component.
+        /// </summary>
+        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+        {
+            pManager.AddPlaneParameter("Pln", "Pln", "Pln", GH_ParamAccess.item);
+            pManager.AddSurfaceParameter("ExtrudedSurf", "ExtrudedSurf", "ExtrudedSurf", GH_ParamAccess.item);
+            pManager.AddPointParameter("Pt", "Pt", "Pt", GH_ParamAccess.item);
+            pManager.AddLineParameter("Normal", "Normal", "Normal", GH_ParamAccess.item);
+        }
+
+        /// <summary>
+        /// This is the method that actually does the work.
+        /// </summary>
+        /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
+        protected override void SolveInstance(IGH_DataAccess DA)
+        {
+            //Plane pln = new Plane(Point3d.Origin, Vector3d.ZAxis);
+            Plane pln = new Plane(Point3d.Origin, Vector3d.XAxis, Vector3d.YAxis);
+            Point3d Pt = pln.PointAt(-10, -10);
+            Vector3d nrm = pln.Normal;
+
+            List<Point3d> Pts = new List<Point3d>();
+            Random rnd = new Random();
+            Point3d Pt1, Pt2, Pt3, Pt4;
+            Pt1 = new Point3d(0, 0, 0); //rnd.Next(10) / 10.0
+            Pt2 = new Point3d(1, 2 / 10.0, 0);
+            Pt3 = new Point3d(2, 0, 0);
+            Pt4 = new Point3d(3, 1, 0);
+            Pts.Add(Pt1);
+            Pts.Add(Pt2);
+            Pts.Add(Pt3);
+            Pts.Add(Pt4);
+            Curve crv = Curve.CreateInterpolatedCurve(Pts, 3);
+            Circle crc = new Circle(Point3d.Origin, 1);
+            Surface extSurf = Surface.CreateExtrusion(crv, 2 * Vector3d.ZAxis);
+
+            double u = -1, v = -1;
+            DA.GetData(0, ref u);
+            DA.GetData(1, ref v);
+            extSurf.SetDomain(0, new Interval(0, 1));
+            extSurf.SetDomain(1, new Interval(0, 1));
+            Point3d Pt5 = extSurf.PointAt(u, v);
+            Vector3d vec = extSurf.NormalAt(u, v);
+            Line lnNormal = new Line();
+            lnNormal.From = Pt5;
+            lnNormal.To = Pt5 + vec;
+
+
+            //Bezier
+            //SweepOneRail
+            //Coons
+
+
+            DA.SetData(0, pln);
+            DA.SetData(1, extSurf);
+            DA.SetData(2, Pt5);
+            DA.SetData(3, lnNormal);
+        }
+
+        private static Brep[] Sweep2(NurbsCurve Rail, List<NurbsCurve> CrossSections)
+        {
+            SweepOneRail sweep = new SweepOneRail();
+            sweep.AngleToleranceRadians = 0.01;
+            sweep.ClosedSweep = true;
+            sweep.SweepTolerance = 0.01;
+            //sweep.SetToRoadlikeTop();
+            Brep[] breps = sweep.PerformSweep(Rail, CrossSections);
+
+            return breps;
+        }
+
+        /// <summary>
+        /// Provides an Icon for the component.
+        /// </summary>
+        protected override System.Drawing.Bitmap Icon
+        {
+            get
+            {
+                //You can add image files to your project resources and access them like this:
+                // return Resources.IconForThisComponent;
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the unique ID for this component. Do not change this ID after release.
+        /// </summary>
+        public override Guid ComponentGuid
+        {
+            get { return new Guid("BBECCDBA-DEEA-4672-872A-926C7629EF50"); }
+        }
+    }
+}
