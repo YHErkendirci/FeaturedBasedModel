@@ -1,0 +1,103 @@
+using System;
+using System.Collections.Generic;
+
+using Grasshopper.Kernel;
+using Rhino.Geometry;
+
+namespace Grasshopper2
+{
+    public class Week4a : GH_Component
+    {
+        /// <summary>
+        /// Initializes a new instance of the Week4a class.
+        /// </summary>
+        public Week4a()
+          : base("Week4a", "Week4a",
+              "Week4a",
+              "MKS528E", "Week4a")
+        {
+        }
+
+        /// <summary>
+        /// Registers all the input parameters for this component.
+        /// </summary>
+        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+        {
+        }
+
+        /// <summary>
+        /// Registers all the output parameters for this component.
+        /// </summary>
+        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+        {
+            pManager.AddSurfaceParameter("surf", "surf", "surf", GH_ParamAccess.item);
+            pManager.AddBrepParameter("sweptSurf", "sweptSurf", "sweptSurf", GH_ParamAccess.list);
+        }
+
+        /// <summary>
+        /// This is the method that actually does the work.
+        /// </summary>
+        /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
+        protected override void SolveInstance(IGH_DataAccess DA)
+        {
+            List<Point3d> Pts = new List<Point3d>();
+            Random rnd = new Random();
+            Pts.Add(new Point3d(0, 0, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(1, 0, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(2, 0, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(3, 0, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(0, 1, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(1, 1, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(2, 1, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(3, 1, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(0, 2, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(1, 2, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(2, 2, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(3, 2, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(0, 3, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(1, 3, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(2, 3, 0.1 * rnd.Next(0, 10)));
+            Pts.Add(new Point3d(3, 3, 0.1 * rnd.Next(0, 10)));
+            NurbsSurface srf = NurbsSurface.CreateThroughPoints(Pts, 4, 4, 3, 3, false, false); // CreateFromPoints
+
+            SweepOneRail sweep = new SweepOneRail();
+            sweep.AngleToleranceRadians = 0.01;
+            sweep.ClosedSweep = true;
+            sweep.SweepTolerance = 0.01;
+            Circle crc = new Circle(Point3d.Origin, 0.5);
+            Line Ln = new Line(Point3d.Origin, new Point3d(0, 0, 3));
+            List<Point3d> Pts2 = new List<Point3d>();
+            Pts2.Add(new Point3d(0, 0, 0));
+            Pts2.Add(new Point3d(0, 0.5, 1));
+            Pts2.Add(new Point3d(0, -0.3, 2));
+            Pts2.Add(new Point3d(0, 0, 3));
+            Curve Crv = Curve.CreateInterpolatedCurve(Pts2, 3);
+            Brep[] sweptSurf = sweep.PerformSweep(Crv, crc.ToNurbsCurve()); //Ln.ToNurbsCurve()
+
+
+            DA.SetData(0, srf);
+            DA.SetDataList(1, sweptSurf);
+        }
+
+        /// <summary>
+        /// Provides an Icon for the component.
+        /// </summary>
+        protected override System.Drawing.Bitmap Icon
+        {
+            get
+            {
+                //You can add image files to your project resources and access them like this:
+                // return Resources.IconForThisComponent;
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the unique ID for this component. Do not change this ID after release.
+        /// </summary>
+        public override Guid ComponentGuid
+        {
+            get { return new Guid("9DC2F137-0C30-4FFE-A683-E98F8F9ADD53"); }
+        }
+    }
+}
